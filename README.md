@@ -1,0 +1,36 @@
+![Codesleuth skills — agent skills for Claude Code](assets/banner.svg)
+
+Agent skills for [Claude Code](https://claude.com/claude-code). Each one is a self-contained
+folder: instructions in `SKILL.md`, plus any scripts and reference material it needs.
+
+## Skills
+
+| Skill | What it does |
+|---|---|
+| [`apply-pr-feedback`](skills/apply-pr-feedback) | Applies GitHub PR review feedback end to end — fixes the unambiguous comments one commit each, pushes, drives CI to green, then replies with the commit hash and resolves the thread. Judgment calls are collected into a summary instead of being acted on. |
+
+## Installing
+
+Copy a skill's folder to wherever you want it available:
+
+```bash
+# available everywhere
+cp -r skills/apply-pr-feedback ~/.claude/skills/
+
+# or just in one project
+cp -r skills/apply-pr-feedback /path/to/project/.claude/skills/
+```
+
+Claude picks it up on the next session. You don't invoke a skill by name — ask for what you
+want in plain language and the matching skill triggers. Each skill's README covers the tools
+it needs and what it will and won't do.
+
+## Contributing
+
+Contributions are welcome, with one condition: they must be free of any license obligation
+and donated outright. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+## License
+
+[MIT](LICENSE) — © 2026 David Wood. One license for the whole repository; skills do not carry
+their own.
