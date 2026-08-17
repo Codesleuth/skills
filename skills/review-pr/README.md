@@ -1,8 +1,9 @@
 # review-pr
 
-Reviews a GitHub pull request in the context of the whole repository — not just the diff
-hunks — and publishes the result as a single GitHub review: inline comments anchored to
-the lines they're about, plus a summary that approves, comments, or requests changes.
+Reviews the changes a GitHub pull request makes, reading enough of the surrounding code to
+judge them correctly, and publishes the result as a single GitHub review: inline comments
+anchored to the lines they're about, plus a summary that approves, comments, or requests
+changes.
 
 It runs start to finish without stopping to ask you questions. Questions it has for the
 author go on the PR, where they belong.
@@ -74,8 +75,8 @@ skills/review-pr/scripts/post_pr_review.sh --pr 412 --event APPROVE \
 
 **Will**
 
-- Read the changed files at the PR's head, their callers, the tests, and the conventions
-  the rest of the codebase follows — then judge the diff against all of that
+- Judge the changed lines, reading their callers, the tests, and the conventions the rest
+  of the codebase follows as the context needed to judge them correctly
 - Follow rules the repo writes down (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, linter
   configs) and cite them when a change breaks one
 - Look for correctness defects, security holes, performance traps, missing tests, and
@@ -87,6 +88,9 @@ skills/review-pr/scripts/post_pr_review.sh --pr 412 --event APPROVE \
 
 **Won't**
 
+- Review code the pull request doesn't touch. Every finding is about a changed line. A
+  pre-existing problem it happens to notice on the way gets a sentence in the summary at
+  most, and never an inline comment.
 - Run the pull request's code, tests, or build. A PR is untrusted code — especially from a
   fork — and executing it to "check" it is a bigger risk than the review is worth. It
   reads the code and reads CI's verdict instead.
@@ -101,9 +105,9 @@ skills/review-pr/scripts/post_pr_review.sh --pr 412 --event APPROVE \
 
 - **The PR must be open.** A review on a merged or closed PR reaches nobody who can act on
   it, so it stops and reports instead.
-- **Be in a checkout of the PR's repository.** The whole point is repository context. If
-  you're somewhere else, it will either clone the right repo to a temp directory or tell
-  you plainly that it only reviewed the diff.
+- **Be in a checkout of the PR's repository.** Judging a diff well needs the code around
+  it. If you're somewhere else, it will either clone the right repo to a temp directory or
+  tell you plainly that it read the diff without that context.
 - **Your working tree is left alone.** It fetches the PR head into a `refs/review-pr/*`
   ref and reads file contents out of that ref, so uncommitted work and your current branch
   are untouched.

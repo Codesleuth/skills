@@ -1,17 +1,25 @@
 ---
 name: review-pr
-description: Review a GitHub pull request against the whole codebase it changes, then publish the review to GitHub as inline comments on the diff plus a summary that approves, comments, or requests changes. Runs start to finish without stopping to ask questions. Use this whenever the user says "review this PR", "review pull request 412", "do a code review on PR #123", "check this PR for bugs and style", "look over these changes and leave feedback", "post a GitHub review", or asks for a second opinion on someone's pull request before it merges — including when all they give you is a PR number or a GitHub URL.
+description: Review the changes a GitHub pull request makes, reading the surrounding code as the context needed to judge them, then publish the review to GitHub as inline comments on the diff plus a summary that approves, comments, or requests changes. Runs start to finish without stopping to ask questions. Use this whenever the user says "review this PR", "review pull request 412", "do a code review on PR #123", "check this PR for bugs and style", "look over these changes and leave feedback", "post a GitHub review", or asks for a second opinion on someone's pull request before it merges — including when all they give you is a PR number or a GitHub URL.
 ---
 
 # Review a pull request
 
-Read a pull request in the context of the repository it changes, then publish one review:
-inline comments on the lines that need them, and a summary carrying the verdict.
+Review the changes a pull request makes, then publish one review: inline comments on the
+lines that need them, and a summary carrying the verdict.
 
-The value here is not in restating the diff. GitHub already shows the author what they
-changed. What they cannot see is how the change lands in the rest of the codebase — the
-caller two files away that passes nil, the convention every sibling module follows, the
-test that no longer covers what it claims to. Finding those is the job.
+**The diff is what you are reviewing.** Every finding is about a line this PR changed, and
+that is where it gets commented. Read the surrounding code — as much of it as the change
+demands — but read it to judge those lines correctly, not to go looking for problems of
+its own. A defect in code the PR does not touch is not this review's business; if it is
+genuinely blocking, one line in the summary names it and that is all.
+
+The value is not in restating the diff — GitHub already shows the author what they
+changed. It is in catching what the hunk alone cannot show: that the caller two files
+away passes nil into the signature they just changed, that the convention every sibling
+module follows is broken here, that the test no longer covers what its name claims. Those
+are all findings about the changed lines. The rest of the codebase is how you find them,
+not what you are reviewing.
 
 ## The operating model: read everything, post once
 
@@ -63,11 +71,12 @@ still a draft, since the author may not have finished.
 outbound network blocked, `gh` reports the failure as `The token in keyring is invalid`,
 which is misleading. Re-run with the sandbox disabled before believing it.
 
-**Check you have the code.** Whole-codebase review needs the codebase. If the local
+**Check you have the code.** Judging a diff well needs the code around it. If the local
 checkout is a different repository than the PR's, either clone the right one to a temp
 directory (`gh repo clone OWNER/REPO /tmp/review-repo`) or say plainly in the final report
-that you reviewed the diff without repository context — a diff-only review is worth much
-less, and passing one off as more is worse than admitting the limit.
+that you read the diff without that context — the review is still worth posting, but it
+will miss whatever the hunks alone do not show, and passing it off as more is worse than
+admitting the limit.
 
 ## Step 2 — Gather the change
 
@@ -116,9 +125,11 @@ attention there. Generated files, lockfiles, and vendored directories deserve a 
 "should this be committed at all", nothing more. Say in the summary which files you read
 closely and which you skimmed, so nobody mistakes silence for approval.
 
-## Step 3 — Read around the change, not just the diff
+## Step 3 — Read enough around the change to judge it
 
-A hunk can be locally correct and still wrong. These are the reads that find that out:
+A hunk can be locally correct and still wrong. These reads are how you settle that
+question about the changed lines — they are not an invitation to review the code they
+lead you through:
 
 - **The whole file**, not the hunk. The nil check may be twenty lines up, or absent.
 - **The callers.** `grep -rn "FunctionName"` across the repo. A changed signature, a new
@@ -160,6 +171,11 @@ test, docs and comments that now describe something the code no longer does.
 Verify before you write. If you cannot point at the line that proves the problem, you do
 not have a finding — you have a guess, and it belongs in the summary as a question or not
 at all.
+
+Then check that the line you are pointing at is one this PR changed. If the proof lands
+on code the diff never touches, what you have found is a pre-existing problem: worth at
+most a sentence in the summary, never an inline comment, and not a reason to withhold
+approval of the change in front of you.
 
 ## Step 4 — Decide what to say, and what verdict to give
 
