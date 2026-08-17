@@ -11,15 +11,22 @@ folder: instructions in `SKILL.md`, plus any scripts and reference material it n
 
 ## Installing
 
-Copy a skill's folder to wherever you want it available:
+Clone the repository, then symlink the skills you want. A symlink means `git pull` updates
+the skill in place — with a copy you'd have to remember to re-copy it.
 
 ```bash
+git clone https://github.com/Codesleuth/skills.git ~/src/codesleuth-skills
+
 # available everywhere
-cp -r skills/apply-pr-feedback ~/.claude/skills/
+mkdir -p ~/.claude/skills
+ln -s ~/src/codesleuth-skills/skills/apply-pr-feedback ~/.claude/skills/apply-pr-feedback
 
 # or just in one project
-cp -r skills/apply-pr-feedback /path/to/project/.claude/skills/
+ln -s ~/src/codesleuth-skills/skills/apply-pr-feedback /path/to/project/.claude/skills/apply-pr-feedback
 ```
+
+Give `ln -s` an absolute path for the target — a relative one is resolved from the link's
+own directory, not from where you ran the command.
 
 Claude picks it up on the next session. You don't invoke a skill by name — ask for what you
 want in plain language and the matching skill triggers. Each skill's README covers the tools
