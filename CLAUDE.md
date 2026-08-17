@@ -6,9 +6,12 @@ CI — verification is manual.
 - **Adding a skill:** build it with the `skill-creator` skill rather than hand-writing the
   files, and add a row to the `## Skills` table in the root `README.md`.
 - **No `license:` in SKILL.md frontmatter and no `LICENSE` file in a skill directory** —
-  the root MIT `LICENSE` covers everything. Watch for this when adapting anything from
-  `anthropics/skills`, which is Apache-2.0. Per `CONTRIBUTING.md`, contributions must be
-  free of license obligations: do not reproduce restrictively licensed material.
+  the root MIT `LICENSE` covers everything.
+- **Everything here is written from scratch.** Per `CONTRIBUTING.md`, a contribution must
+  carry no license obligation at all, which rules out permissive licenses as well. Read
+  `anthropics/skills` (Apache-2.0) for architectural patterns and ideas if it helps, but
+  do not copy its prose or code in: stripping the license header and the frontmatter does
+  not make a derivative work donatable.
 - **Bundled scripts are bash, committed `chmod +x`.** `apply-pr-feedback` deliberately
   avoids Python and standalone `jq` — `gh` has a jq engine behind `--jq`. Keep new
   scripts equally install-free.
