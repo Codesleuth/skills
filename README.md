@@ -8,6 +8,7 @@ folder: instructions in `SKILL.md`, plus any scripts and reference material it n
 | Skill | What it does |
 |---|---|
 | [`apply-pr-feedback`](skills/apply-pr-feedback) | Applies GitHub PR review feedback end to end — fixes the unambiguous comments one commit each, pushes, drives CI to green, then replies with the commit hash and resolves the thread. Judgment calls are collected into a summary instead of being acted on. |
+| [`review-pr`](skills/review-pr) | Reviews a GitHub pull request against the whole codebase rather than the diff alone, then publishes it as one review — inline comments on the lines they're about, plus a summary that approves, comments, or requests changes. Reads the code; never runs it or changes it. |
 
 ## Installing
 
