@@ -46,6 +46,13 @@ form to fill in; the act of submitting is the affirmation.
 
 ## Practical notes for a new skill
 
+Build it with the [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator)
+skill rather than writing the files by hand — ask Claude to use it. It walks you through
+the design, scaffolds the layout, and can measure how reliably the finished skill triggers.
+Skills here are expected to have been made that way.
+
+The conventions it needs to respect in this repository:
+
 - One directory per skill under `skills/`, named the same as the skill.
 - A `SKILL.md` with `name` and `description` frontmatter. The description is what decides
   whether the skill triggers, so write it for matching, not for marketing — name the
