@@ -148,25 +148,30 @@ fi
 
 # --- Resolve the repo and the commit being reviewed -------------------------------
 
-if [ -z "$REPO" ]; then
-  need_gh
-  if ! REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>&1); then
-    echo "$REPO" >&2
-    die "could not resolve repository name (pass --repo OWNER/REPO)"
+if [ "$DRY_RUN" -eq 1 ]; then
+  REPO="${REPO:-owner/repo}"
+  COMMIT="${COMMIT:-HEAD}"
+else
+  if [ -z "$REPO" ]; then
+    need_gh
+    if ! REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>&1); then
+      echo "$REPO" >&2
+      die "could not resolve repository name (pass --repo OWNER/REPO)"
+    fi
   fi
-fi
-case "$REPO" in
-  */*) ;;
-  *) die "--repo must be OWNER/REPO, got: $REPO" ;;
-esac
+  case "$REPO" in
+    */*) ;;
+    *) die "--repo must be OWNER/REPO, got: $REPO" ;;
+  esac
 
-# Anchoring to the SHA you actually read means a comment can never land on a line the
-# author changed after you fetched the diff - GitHub rejects it instead.
-if [ -z "$COMMIT" ]; then
-  need_gh
-  if ! COMMIT=$(gh api "repos/${REPO}/pulls/${PR}" --jq .head.sha 2>&1); then
-    echo "$COMMIT" >&2
-    die "could not read the head commit of ${REPO}#${PR}"
+  # Anchoring to the SHA you actually read means a comment can never land on a line the
+  # author changed after you fetched the diff - GitHub rejects it instead.
+  if [ -z "$COMMIT" ]; then
+    need_gh
+    if ! COMMIT=$(gh api "repos/${REPO}/pulls/${PR}" --jq .head.sha 2>&1); then
+      echo "$COMMIT" >&2
+      die "could not read the head commit of ${REPO}#${PR}"
+    fi
   fi
 fi
 
