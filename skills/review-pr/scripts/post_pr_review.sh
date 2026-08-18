@@ -43,6 +43,54 @@ die() { echo "error: $*" >&2; exit 2; }
 hint() { echo "hint: $*" >&2; }
 need_gh() { command -v gh >/dev/null 2>&1 || die "the gh CLI is required but not installed"; }
 
+validate_json() {
+  local file="$1" desc="$2"
+  local err
+  err=$(awk '
+    BEGIN { in_str = 0; esc = 0; depth = 0; err = 0 }
+    {
+      len = length($0)
+      for (i = 1; i <= len; i++) {
+        c = substr($0, i, 1)
+        if (in_str) {
+          if (esc) {
+            esc = 0
+          } else if (c == "\\") {
+            esc = 1
+          } else if (c == "\"") {
+            in_str = 0
+          }
+        } else {
+          if (c == "\"") {
+            in_str = 1
+          } else if (c == "{" || c == "[") {
+            stack[++depth] = c
+          } else if (c == "}") {
+            if (depth == 0 || stack[depth] != "{") {
+              print "unexpected '\''}'\'' at line " NR; err = 1; exit 1
+            }
+            depth--
+          } else if (c == "]") {
+            if (depth == 0 || stack[depth] != "[") {
+              print "unexpected '\'']'\'' at line " NR; err = 1; exit 1
+            }
+            depth--
+          }
+        }
+      }
+      if (in_str && !esc) {
+        print "unescaped newline inside string literal at line " NR; err = 1; exit 1
+      }
+    }
+    END {
+      if (!err) {
+        if (in_str) { print "unclosed string literal at EOF"; exit 1 }
+        if (depth > 0) { print "unclosed " stack[depth] " at EOF"; exit 1 }
+      }
+    }
+  ' "$file" 2>&1) || die "$desc is not valid JSON: $err"
+}
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --repo|--pr|--event|--body|--body-file|--comments-file|--commit)
@@ -95,6 +143,7 @@ if [ -n "$COMMENTS_FILE" ]; then
     "") die "--comments-file is empty - omit the flag if there are no inline comments" ;;
     *) die "--comments-file must hold a JSON array of {path, line, side, body} objects" ;;
   esac
+  validate_json "$COMMENTS_FILE" "--comments-file"
 fi
 
 # --- Resolve the repo and the commit being reviewed -------------------------------
@@ -154,6 +203,8 @@ trap 'rm -f "$PAYLOAD"' EXIT
   printf '}\n'
 } > "$PAYLOAD"
 
+validate_json "$PAYLOAD" "review payload"
+
 if [ "$DRY_RUN" -eq 1 ]; then
   echo "would POST repos/${REPO}/pulls/${PR}/reviews" >&2
   cat "$PAYLOAD"
@@ -188,6 +239,8 @@ case "$OUT" in
     hint "the commit is not the PR head any more - the author pushed while you were reviewing. Re-read the head SHA, re-derive the diff, and post against the new one." ;;
   *"approve your own"*|*"Can not approve"*)
     hint "GitHub does not let an account approve its own pull request. Post the same review with --event COMMENT." ;;
+  *"HTTP 400"*|*"Problems parsing JSON"*|*"parse error"*)
+    hint "GitHub could not parse the review payload as JSON. Run with --dry-run to inspect the generated payload, and check that --comments-file contains valid JSON with properly escaped strings (newlines as \\n, quotes as \\\")." ;;
   *"HTTP 403"*|*"Resource not accessible"*)
     hint "the token cannot write to ${REPO}. Reviews need write access, or a fine-grained token with 'Pull requests: write'." ;;
   *"HTTP 401"*|*"keyring is invalid"*|*"authentication"*|*"credentials"*)
