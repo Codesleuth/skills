@@ -194,7 +194,8 @@ json_escape() {
 }
 
 PAYLOAD=$(mktemp "${TMPDIR:-/tmp}/pr-review.XXXXXX") || die "could not create a temp file"
-trap 'rm -f "$PAYLOAD"' EXIT
+ERRFILE=$(mktemp "${TMPDIR:-/tmp}/pr-review-err.XXXXXX") || die "could not create a temp file"
+trap 'rm -f "$PAYLOAD" "$ERRFILE"' EXIT
 
 {
   printf '{"commit_id": "%s", "event": "%s"' "$COMMIT" "$EVENT"
@@ -221,15 +222,17 @@ fi
 need_gh
 
 OUT=$(gh api --method POST "repos/${REPO}/pulls/${PR}/reviews" --input "$PAYLOAD" \
-      --jq '[(.id | tostring), .html_url, .state, .commit_id] | @tsv' 2>&1)
+      --jq '[(.id | tostring), .html_url, .state, .commit_id] | @tsv' 2>"$ERRFILE")
 STATUS=$?
 
 if [ "$STATUS" -eq 0 ]; then
   IFS=$'\t' read -r REVIEW_ID HTML_URL STATE COMMIT_ID <<< "$OUT"
-  printf '{"status": "posted", "review_id": %s, "html_url": "%s", "state": "%s", "commit_id": "%s"}\n' \
+  printf '{"status": "posted", "review_id": "%s", "html_url": "%s", "state": "%s", "commit_id": "%s"}\n' \
     "$REVIEW_ID" "$HTML_URL" "$STATE" "$COMMIT_ID"
   exit 0
 fi
+
+OUT=$(cat "$ERRFILE")
 
 # The endpoint fails in a handful of recognisable ways, and the raw message rarely names
 # the fix. Say what to do about each rather than making the caller guess.
