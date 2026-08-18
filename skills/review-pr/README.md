@@ -61,11 +61,11 @@ With no PR given it reviews the pull request for the branch you're on.
 Running the publishing step by hand, if you want to post a review you assembled yourself:
 
 ```bash
-skills/review-pr/scripts/post_pr_review.sh --pr 412 --event COMMENT \
+skills/review-pr/scripts/post_pr_review.sh --pr 412 --commit 9f2c1ab --event COMMENT \
   --body-file summary.md --comments-file comments.json
 
 # see the exact payload without posting anything
-skills/review-pr/scripts/post_pr_review.sh --pr 412 --event APPROVE \
+skills/review-pr/scripts/post_pr_review.sh --pr 412 --commit 9f2c1ab --event APPROVE \
   --body "Read it end to end — the migration is reversible." --dry-run
 ```
 
@@ -124,8 +124,9 @@ skills/review-pr/scripts/post_pr_review.sh --pr 412 --event APPROVE \
 - **Comments can only attach to lines the diff shows.** A problem in code the PR doesn't
   touch goes in the summary body instead, with the file and line named.
 - **Binary files and files too large for GitHub to diff** can't carry inline comments.
-- **A push during the review** invalidates the anchors. The run detects this and re-reads
-  the diff rather than commenting on code it never saw.
+- **A push during the review** invalidates the anchors. When `--commit` is passed with
+  the SHA read at review start, the run detects this and fails safely rather than
+  commenting on code it never saw.
 - **Bot reviews already on the PR** are read so their points aren't repeated, but they're
   not treated as authoritative.
 
