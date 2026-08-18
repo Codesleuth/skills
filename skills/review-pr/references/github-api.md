@@ -107,23 +107,23 @@ Derive the valid anchors from the patch instead. This prints every line on the R
 (head) side that a comment may attach to, as `path:line`:
 
 ```bash
-gh pr diff 412 | awk '
+awk '
   /^diff --git / { inhunk = 0; next }
   /^\+\+\+ / && !inhunk { file = ($0 == "+++ /dev/null") ? "" : substr($0, 7); next }
   /^@@/ { inhunk = 1; match($0, /\+[0-9]+/); n = substr($0, RSTART + 1, RLENGTH - 1) + 0; next }
   /^[+ ]/ { if (inhunk && file != "") print file ":" n++ }
-'
+' /tmp/pr.patch
 ```
 
 The LEFT (base) side, for commenting on lines the PR deletes:
 
 ```bash
-gh pr diff 412 | awk '
+awk '
   /^diff --git / { inhunk = 0; next }
   /^--- / && !inhunk { file = ($0 == "--- /dev/null") ? "" : substr($0, 7); next }
   /^@@/ { inhunk = 1; match($0, /-[0-9]+/); n = substr($0, RSTART + 1, RLENGTH - 1) + 0; next }
   /^[- ]/ { if (inhunk && file != "") print file ":" n++ }
-'
+' /tmp/pr.patch
 ```
 
 Both track whether they are inside a hunk before treating a `+++`/`---` line as a file
@@ -135,7 +135,7 @@ anchor to.
 To check a set of anchors before posting:
 
 ```bash
-gh pr diff 412 | awk '...' > /tmp/valid-anchors.txt   # recipe above
+awk '...' /tmp/pr.patch > /tmp/valid-anchors.txt   # recipe above
 grep -Fxq "src/parser.go:42" /tmp/valid-anchors.txt && echo ok || echo "not in the diff"
 ```
 
