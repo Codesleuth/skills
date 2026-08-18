@@ -163,7 +163,7 @@ gh api --method POST repos/OWNER/REPO/pulls/412/reviews --input payload.json
 | `commit_id` | Defaults to the PR head at the moment of the call. Passing the SHA you reviewed turns a mid-review push into a clean error instead of comments on unread code. |
 | `line` | Line number in the file, on `side`. Must be inside a hunk. |
 | `side` | `RIGHT` (head, default) for added and context lines; `LEFT` (base) for deleted ones. |
-| `start_line` / `start_side` | Multi-line ranges. `start_line` must precede `line`. |
+| `start_line` / `start_side` | Multi-line ranges. `start_line` must precede `line`, and both must fall within the same hunk. |
 
 The whole payload is one transaction: if any comment is rejected, nothing is posted, so a
 retry after fixing the anchor cannot double-post.
@@ -220,7 +220,7 @@ build is worth a line in the summary; chasing it is not this skill's job.
 | Symptom | Cause | Response |
 |---|---|---|
 | 422 `line must be part of the diff` | Anchor is outside every hunk, or numbered against the wrong side | Re-derive from the anchor recipe; move the point to the summary if the line isn't in the diff |
-| 422 `start_line must precede line` | Range comment inverted, or `start_side` disagrees with `side` | Order them, and match the sides |
+| 422 `start_line must precede line` / invalid hunk range | Range comment inverted, `start_side` disagrees with `side`, or range spans across hunk boundaries | Order them, match the sides, and ensure both fall within the same hunk |
 | 422 `No commit found for SHA` / not part of the PR | The author pushed while you were reviewing | Re-read the head SHA and the diff, then post against the new head |
 | 422 `Can not approve your own pull request` | Approving a PR your token authored | Post the same review as `COMMENT` |
 | 422 with no obvious cause | Malformed payload — usually a comment missing `path`, `line`, or `body` | Re-run the script with `--dry-run` and inspect the JSON |

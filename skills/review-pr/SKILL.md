@@ -314,7 +314,8 @@ not just the bad one — if any anchor is not part of the diff. The rules:
 - The line must fall inside a hunk. A line the diff never shows cannot carry a comment,
   however relevant it is — put that point in the summary body instead.
 - For a range, add `start_line` (and `start_side` if it differs); `start_line` must come
-  before `line`.
+  before `line`. Both `start_line` and `line` must fall within the same hunk of the file
+  — GitHub rejects a range that straddles a hunk boundary.
 
 To get the set of lines you are allowed to anchor to, derive them from the patch rather
 than counting by eye — `references/github-api.md` has a one-line recipe that prints every
