@@ -150,8 +150,10 @@ fi
 
 if [ -z "$REPO" ]; then
   need_gh
-  REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null) \
-    || die "not inside a GitHub repo - pass --repo OWNER/REPO"
+  if ! REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>&1); then
+    echo "$REPO" >&2
+    die "could not resolve repository name (pass --repo OWNER/REPO)"
+  fi
 fi
 case "$REPO" in
   */*) ;;
