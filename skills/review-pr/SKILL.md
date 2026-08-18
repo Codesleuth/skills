@@ -325,7 +325,7 @@ posting turns the most common failure into a non-event.
 Then post the review:
 
 ```bash
-scripts/post_pr_review.sh --repo owner/repo --pr 412 --commit 9f2c1ab \
+~/.claude/skills/review-pr/scripts/post_pr_review.sh --repo owner/repo --pr 412 --commit 9f2c1ab \
   --event REQUEST_CHANGES --body-file /tmp/summary.md \
   --comments-file /tmp/comments.json
 ```
