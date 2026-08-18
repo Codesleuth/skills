@@ -183,15 +183,13 @@ fi
 json_escape() {
   printf '%s' "$1" \
     | LC_ALL=C tr -d '\001-\010\013-\037' \
+    | sed 's/\\/\\\\/g; s/"/\\"/g' \
     | LC_ALL=C awk '
         BEGIN { ORS = "" }
         {
           if (NR > 1) printf "\\n"
-          s = $0
-          gsub(/\\/, "\\\\", s)
-          gsub(/"/, "\\\"", s)
-          gsub(/\t/, "\\t", s)
-          printf "%s", s
+          gsub(/\t/, "\\t", $0)
+          printf "%s", $0
         }'
 }
 
