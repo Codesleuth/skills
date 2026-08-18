@@ -39,24 +39,28 @@ DRY_RUN=0
 # Print the header comment block above, so --help can never drift from the real flags.
 usage() { awk 'NR>1 && /^#/ { sub(/^#[[:space:]]?/, ""); print; next } NR>1 { exit }' "$0"; }
 
+die() { echo "error: $*" >&2; exit 2; }
+hint() { echo "hint: $*" >&2; }
+need_gh() { command -v gh >/dev/null 2>&1 || die "the gh CLI is required but not installed"; }
+
 while [ $# -gt 0 ]; do
   case "$1" in
-    --repo) REPO="${2:-}"; shift 2 ;;
-    --pr) PR="${2:-}"; shift 2 ;;
-    --event) EVENT="${2:-}"; shift 2 ;;
-    --body) BODY="${2:-}"; shift 2 ;;
-    --body-file) BODY_FILE="${2:-}"; shift 2 ;;
-    --comments-file) COMMENTS_FILE="${2:-}"; shift 2 ;;
-    --commit) COMMIT="${2:-}"; shift 2 ;;
+    --repo|--pr|--event|--body|--body-file|--comments-file|--commit)
+      [ $# -ge 2 ] || die "$1 requires a value" ;;
+  esac
+  case "$1" in
+    --repo) REPO="$2"; shift 2 ;;
+    --pr) PR="$2"; shift 2 ;;
+    --event) EVENT="$2"; shift 2 ;;
+    --body) BODY="$2"; shift 2 ;;
+    --body-file) BODY_FILE="$2"; shift 2 ;;
+    --comments-file) COMMENTS_FILE="$2"; shift 2 ;;
+    --commit) COMMIT="$2"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
-
-die() { echo "error: $*" >&2; exit 2; }
-hint() { echo "hint: $*" >&2; }
-need_gh() { command -v gh >/dev/null 2>&1 || die "the gh CLI is required but not installed"; }
 
 # --- Validate before spending an API call -----------------------------------------
 
