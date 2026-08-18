@@ -133,7 +133,7 @@ question about the changed lines — they are not an invitation to review the co
 lead you through:
 
 - **The whole file**, not the hunk. The nil check may be twenty lines up, or absent.
-- **The callers.** `grep -rn "FunctionName"` across the repo. A changed signature, a new
+- **The callers.** `git grep -n "FunctionName" refs/review-pr/412`. A changed signature, a new
   error return, a nil that can now escape — the damage is at the call sites.
 - **The project's own rules.** `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, the README,
   linter and formatter configs. A rule the repo states in writing is not a matter of your

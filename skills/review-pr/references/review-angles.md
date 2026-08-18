@@ -118,7 +118,7 @@ What to look for in the minus lines:
 ### 3. Across the call graph
 
 The change is local; the damage is at the boundary. For every function, method, type, or
-constant the diff changes, search the repo for its name (`grep -rn`) and check both
+constant the diff changes, search the repo at the PR ref for its name (`git grep -n "name" refs/review-pr/412`) and check both
 directions.
 
 **Callers** — does the change break any call site?
