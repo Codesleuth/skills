@@ -95,7 +95,7 @@ user's working tree:
 ```bash
 git fetch origin pull/412/head:refs/review-pr/412 --force
 git show refs/review-pr/412:src/parser.go        # the file as this PR leaves it
-git show origin/main:src/parser.go               # the same file before the change
+git show "origin/$BASE_REF:src/parser.go"        # the same file before the change
 ```
 
 **Never check out the branch or modify the working tree.** It belongs to the user, it may

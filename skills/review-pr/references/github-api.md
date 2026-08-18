@@ -70,12 +70,12 @@ branch created, no interference with whatever the user has in progress:
 
 ```bash
 git fetch origin pull/412/head:refs/review-pr/412 --force
-git fetch origin main                                  # so the base is current
+git fetch origin "$BASE_REF"                           # so the base is current
 
 git show refs/review-pr/412:src/parser.go              # file as the PR leaves it
-git show origin/main:src/parser.go                     # file before the change
-git diff origin/main...refs/review-pr/412 -- src/      # scoped diff
-git log --oneline origin/main..refs/review-pr/412      # commits unique to the PR
+git show "origin/$BASE_REF:src/parser.go"              # file before the change
+git diff "origin/$BASE_REF...refs/review-pr/412" -- src/ # scoped diff
+git log --oneline "origin/$BASE_REF..refs/review-pr/412" # commits unique to the PR
 
 git update-ref -d refs/review-pr/412                   # clean up when done
 ```
