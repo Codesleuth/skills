@@ -44,8 +44,9 @@ Requires the `gh` CLI, authenticated, and `git`. `gh` embeds its own jq engine b
 
 | Path | Use |
 |---|---|
+| `references/review-angles.md` | The finding catalogue behind Step 4 — each angle in full, language footgun tables, high-risk domains, the sweep list. Read it before hunting |
 | `scripts/post_pr_review.sh` | Publish the whole review — inline comments and summary — in one request |
-| `references/github-api.md` | Raw `gh` commands, the anchor recipe, and failure modes — read when Step 5 fails or you need something the script doesn't cover |
+| `references/github-api.md` | Raw `gh` commands, the anchor recipe, and failure modes — read when Step 6 fails or you need something the script doesn't cover |
 
 These paths are relative to this skill's directory, but you will be running inside the
 target repository, so invoke them by full path.
@@ -125,7 +126,7 @@ attention there. Generated files, lockfiles, and vendored directories deserve a 
 "should this be committed at all", nothing more. Say in the summary which files you read
 closely and which you skimmed, so nobody mistakes silence for approval.
 
-## Step 3 — Read enough around the change to judge it
+## Step 3 — Build the context you will judge the change against
 
 A hunk can be locally correct and still wrong. These reads are how you settle that
 question about the changed lines — they are not an invitation to review the code they
@@ -136,48 +137,98 @@ lead you through:
   error return, a nil that can now escape — the damage is at the call sites.
 - **The project's own rules.** `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, the README,
   linter and formatter configs. A rule the repo states in writing is not a matter of your
-  taste, and citing it is what makes the comment land.
+  taste, and citing it is what makes the comment land. Note that a `CLAUDE.md` in a
+  subdirectory governs that directory and below, not the whole repo.
 - **The sibling implementations.** If six handlers do a thing one way and this one is the
   seventh doing it differently, that is worth a comment. If the codebase has a helper for
   exactly this, point at it by path.
 - **The tests.** Do the new ones actually exercise the new behaviour, or do they assert
   the mock was called? Does an existing test still cover what its name claims?
 
-What to look for, in rough order of how much it matters:
+Read for orientation here, not for verdicts. The point of this step is that by the time
+you start hunting in Step 4 you already know what this code is supposed to do, who depends
+on it, and what the project's conventions are — so a wrong line looks wrong to you instead
+of merely unfamiliar.
 
-**Correctness** — nil and undefined dereferences, off-by-one and boundary conditions,
-inverted or short-circuiting conditionals, unhandled errors, `await`/goroutine/lock
-mistakes, TOCTOU races, integer overflow, silent truncation, resources opened on a path
-that never closes them, behaviour that changes for existing callers without a migration.
+## Step 4 — Hunt
 
-**Architecture and conventions** — logic duplicated from an existing helper, layering
-violations, an abstraction introduced for one caller, dead code left behind, a public API
-widened without need. Also licensing: code that looks copied from elsewhere, or a
-dependency added under terms the project would not accept.
+Now look for defects. Read `references/review-angles.md` before you start and keep it
+open — it holds each angle in full, the language footgun tables, the high-risk domains,
+and the sweep list. This step is the discipline for running them; that file is the
+content.
 
-**Security** — input that reaches a query, a shell, a path, or a template without
-validation or parameterisation; authentication or authorisation checks that a new path
-skips; secrets, tokens, or internal hostnames in source or logs; user data written to logs
-in the clear; a dependency bump that pulls in something unvetted.
+**Run the angles as separate passes over the same diff.** A single linear read finds the
+bugs that look like bugs. The ones that ship are the ones that look fine in the hunk: the
+guard that quietly disappeared, the caller two files away, the trap that is only a trap in
+this language. Each angle is a different question, and it is only a second look if you ask
+it independently — carrying "I already checked that function" from one angle into the next
+turns the second into an echo of the first.
 
-**Performance** — a query inside a loop, an index dropped or never added, unbounded
-growth, an O(n²) walk over something that scales with user data, work done on every
-request that could be done once. Judge it against how hot the path actually is; a slow
-loop over three config entries is not a finding.
+| # | Angle | The question it asks |
+|---|---|---|
+| 1 | Line by line, with the enclosing function | What input, state, timing, or platform makes this line wrong? |
+| 2 | What the diff removed | What did this deleted line enforce, and where is it re-established? |
+| 3 | Across the call graph | Does this break a caller, a callee, or a persisted boundary? |
+| 4 | Language footguns | Does the diff introduce one of this language's classic traps? |
+| 5 | Wrappers, proxies, delegation | Does every method route to the wrapped instance, and does the wrapper forward everything callers use? |
+| 6 | State, concurrency, failure paths | What is left behind under retry, partial failure, or two of these at once? |
+| 7 | Tests as evidence | Would this test still pass if the implementation were gutted? |
 
-**Tests and documentation** — new behaviour with no test, a bug fix with no regression
-test, docs and comments that now describe something the code no longer does.
+Angle 2 is the highest-yield and the one reviewers skip most often: additions announce
+themselves, and a guard that is simply gone announces nothing.
 
-Verify before you write. If you cannot point at the line that proves the problem, you do
-not have a finding — you have a guess, and it belongs in the summary as a question or not
-at all.
+Then the quality angles — reuse, simplification, efficiency, altitude — and the conventions
+the repo writes down. Both are in the reference. They earn a non-blocking comment when the
+better alternative is concrete and nameable, and silence when it isn't.
 
-Then check that the line you are pointing at is one this PR changed. If the proof lands
-on code the diff never touches, what you have found is a pre-existing problem: worth at
-most a sentence in the summary, never an inline comment, and not a reason to withhold
-approval of the change in front of you.
+Rank what you find: correctness first, then security, then the quality angles. A crash and
+a naming quibble are not the same finding, and a review that presents them at equal weight
+has not done the ranking the author needs.
 
-## Step 4 — Decide what to say, and what verdict to give
+**Collect candidates; do not judge them yet.** An angle's job is to produce candidates,
+not verdicts. Filtering while you hunt is what makes a review shallow — the
+plausible-but-uncertain finding is the first thing self-censorship throws away, and it is
+often the one that turns out to be real. Record each candidate with:
+
+| Field | What it holds |
+|---|---|
+| `file` / `line` | Where the comment will anchor — a line this PR changed |
+| `summary` | One sentence: what is wrong |
+| `failure scenario` | Concrete inputs or state → the wrong output, crash, or cost |
+| `evidence` | The line, or the other file's line, that proves it |
+
+The failure scenario is the load-bearing one. "This might not handle nulls" is a worry;
+"`Load` returns `nil, nil` when the config file is absent, so line 42 dereferences nil and
+panics on first boot" is a finding. If you cannot write the concrete version, you have not
+finished thinking — either finish, or let it go.
+
+Budget around eight candidates per angle and stop there. Past that you are padding, and
+padding is what buries the real findings.
+
+**Finish with the sweep list.** One more pass as a fresh reviewer holding the candidate
+list, looking only for what is *not* on it: moved code that dropped a guard, a default
+that flipped, a constant changed in one of the two places it lives. The reference has the
+full list. If nothing new surfaces, return nothing.
+
+Two rules decide whether a candidate survives into Step 5:
+
+**Verify before you write.** If you cannot point at the line that proves the problem, you
+do not have a finding — you have a guess, and it belongs in the summary as a question or
+not at all.
+
+**Check that the line is one this PR changed.** If the proof lands on code the diff never
+touches, what you have found is a pre-existing problem: worth at most a sentence in the
+summary, never an inline comment, and not a reason to withhold approval of the change in
+front of you.
+
+## Step 5 — Decide what to say, and what verdict to give
+
+Take the candidate list from Step 4 in one deliberate pass, with all of it in front of you.
+Merge only the genuinely identical findings — same defect, same location, same reason. Two
+angles flagging one line for different reasons is two findings, and the overlap is a signal
+that the line deserves attention rather than a duplicate to collapse.
+
+Then decide, one candidate at a time, whether it earns a comment at all.
 
 ### What earns an inline comment
 
@@ -192,7 +243,7 @@ check above the dereference covers it.
 ```
 
 Suggest concrete code where the fix is small and unambiguous; GitHub renders a
-```suggestion block as a one-click apply, which is the fastest possible path from comment
+`suggestion` block as a one-click apply, which is the fastest possible path from comment
 to fix.
 
 ### What does not earn one
@@ -228,7 +279,7 @@ if the PR is yours — GitHub rejects self-approval) whose body names what you c
 which files you read, what you verified, what you deliberately did not cover. A clean
 review that shows its work is useful. Inventing a finding to look thorough is not.
 
-## Step 5 — Publish
+## Step 6 — Publish
 
 Write the inline comments to a JSON file. Each entry needs `path`, `line`, `side`, and
 `body`:
@@ -316,7 +367,7 @@ One-paragraph read on what the PR does and whether it does it.
 Naming what you did not review is not a hedge — it tells the maintainer where they still
 need their own eyes.
 
-## Step 6 — Report to the terminal
+## Step 7 — Report to the terminal
 
 Short, and enough to judge the review without opening GitHub:
 

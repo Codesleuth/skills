@@ -79,6 +79,9 @@ skills/review-pr/scripts/post_pr_review.sh --pr 412 --event APPROVE \
   of the codebase follows as the context needed to judge them correctly
 - Follow rules the repo writes down (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, linter
   configs) and cite them when a change breaks one
+- Hunt in separate passes rather than one linear read — what the diff *removed*, the
+  call sites, the language's own footguns, the failure and concurrency paths, and
+  whether the tests would fail if the implementation were gutted
 - Look for correctness defects, security holes, performance traps, missing tests, and
   documentation the change has made untrue
 - Anchor each comment to the line it's about, including multi-line ranges and deleted
@@ -131,6 +134,7 @@ skills/review-pr/scripts/post_pr_review.sh --pr 412 --event APPROVE \
 | Path | Purpose |
 |---|---|
 | `SKILL.md` | The instructions Claude follows |
+| `references/review-angles.md` | The finding catalogue — the review angles in full, language footgun tables, high-risk domains, and the sweep list |
 | `scripts/post_pr_review.sh` | Publishes the inline comments and summary as one review |
 | `references/github-api.md` | Raw `gh` commands, the diff-anchor recipe, and failure modes |
 
