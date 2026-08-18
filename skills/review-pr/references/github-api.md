@@ -86,8 +86,16 @@ Confirm the fetch matches what you are reviewing:
 [ "$(git rev-parse refs/review-pr/412)" = "$(gh pr view 412 --json headRefOid --jq .headRefOid)" ]
 ```
 
-For a fork PR the `pull/N/head` ref still works against `origin` — GitHub serves it from
-the upstream repo, so there is no need to add the fork as a remote.
+GitHub serves `pull/N/head` from the PR's **base** repository. If `origin` is the base
+repository (the standard layout), `git fetch origin pull/412/head:...` works directly.
+If you are standing in a fork checkout where `origin` is your fork and `upstream` is the
+base repo, fetch from the base remote instead:
+
+```bash
+git fetch upstream pull/412/head:refs/review-pr/412 --force
+# or using the base repo URL directly:
+git fetch "https://github.com/${OWNER}/${REPO}.git" pull/412/head:refs/review-pr/412 --force
+```
 
 ## Working out which lines a comment can anchor to
 
