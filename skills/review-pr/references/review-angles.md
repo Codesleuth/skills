@@ -214,7 +214,7 @@ Tests in a PR are a claim about behaviour. Check the claim.
 | Object/array default in a shared scope | One mutation leaks to every user of it |
 | `JSON.parse` on untrusted input | Throws; also `__proto__` pollution when merging the result |
 | `Number` precision | `0.1 + 0.2 !== 0.3`; IDs beyond `2^53` lose digits when parsed as numbers |
-| `Array.sort()` without a comparator | Sorts lexicographically: `[10, 9]` → `[10, 9]` |
+| `Array.sort()` without a comparator | Sorts lexicographically: `[9, 10]` → `[10, 9]` |
 | TypeScript `as` | An assertion, not a check — silences the compiler without validating anything |
 
 **Python**
