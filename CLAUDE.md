@@ -5,8 +5,11 @@ CI — verification is manual.
 
 - **Adding a skill:** build it with the `skill-creator` skill rather than hand-writing the
   files, and add a row to the `## Skills` table in the root `README.md`.
-- **No `license:` in SKILL.md frontmatter and no `LICENSE` file in a skill directory** —
-  the root MIT `LICENSE` covers everything.
+- **Licensing sits at skill level, not repo level.** Every skill directory carries its own
+  `LICENSE.txt`, and its `SKILL.md` frontmatter carries `license: Complete terms in
+  LICENSE.txt` as the signpost to it. There is no root `LICENSE`; a new skill copies
+  `LICENSE.txt` from an existing one. Repo-level docs stay silent on the terms and point
+  down to the skill.
 - **Everything here is written from scratch.** Per `CONTRIBUTING.md`, a contribution must
   carry no license obligation at all, which rules out permissive licenses as well. Read
   `anthropics/skills` (Apache-2.0) for architectural patterns and ideas if it helps, but

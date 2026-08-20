@@ -35,7 +35,8 @@ out if you are unsure.
 
 By opening a pull request you are donating your contribution. You keep no ownership of it,
 you assert no license over it, and you make no claim on it afterwards. Once merged, it is
-part of this repository under [the MIT license](LICENSE) and is maintained here.
+part of the skill it lands in, released under that skill's `LICENSE.txt`, and maintained
+here.
 
 You must have the right to do that. If your employer owns your output, or the work was done
 under a contract that assigns it elsewhere, then it is not yours to donate — get that sorted
@@ -57,9 +58,11 @@ The conventions it needs to respect in this repository:
 - A `SKILL.md` with `name` and `description` frontmatter. The description is what decides
   whether the skill triggers, so write it for matching, not for marketing — name the
   phrases a user would actually say.
-- No `license:` field in the `SKILL.md` frontmatter and no `LICENSE` file inside the skill
-  directory. `skill-creator` tends to add a `license:` by default; take it out. Licensing
-  is handled once, at the root.
+- A `LICENSE.txt` in the skill directory, copied verbatim from an existing skill, and a
+  `license: Complete terms in LICENSE.txt` line in the `SKILL.md` frontmatter pointing at
+  it. Licensing sits with the skill, not with the repository, so a new skill is not
+  finished until it carries both. `skill-creator` writes its own `license:` value by
+  default; replace it with that exact line.
 - A `README.md` in the skill directory if a human needs setup instructions (tools to
   install, credentials, limits worth knowing before running it).
 - Put executable helpers in `scripts/` and background material in `references/`.

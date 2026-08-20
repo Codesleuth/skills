@@ -31,7 +31,8 @@ own directory, not from where you ran the command.
 
 Claude picks it up on the next session. You don't invoke a skill by name — ask for what you
 want in plain language and the matching skill triggers. Each skill's README covers the tools
-it needs and what it will and won't do.
+it needs and what it will and won't do, and its `LICENSE.txt` covers the terms you take it
+under.
 
 ## Contributing
 
@@ -40,5 +41,6 @@ and donated outright. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a p
 
 ## License
 
-[MIT](LICENSE) — © 2026 David Wood. One license for the whole repository; skills do not carry
-their own.
+Licensing lives with each skill, not with the repository. Read the `LICENSE.txt` in a skill's
+folder for the terms that apply to it — its `SKILL.md` frontmatter points at the same file.
+There is no repository-wide license, so check the skill you are actually taking.
