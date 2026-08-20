@@ -46,16 +46,27 @@ form to fill in; the act of submitting is the affirmation.
 
 ## Practical notes for a new skill
 
+Build it with the [`skill-creator`](https://github.com/anthropics/skills/tree/main/skills/skill-creator)
+skill rather than writing the files by hand — ask Claude to use it. It walks you through
+the design, scaffolds the layout, and can measure how reliably the finished skill triggers.
+Skills here are expected to have been made that way.
+
+The conventions it needs to respect in this repository:
+
 - One directory per skill under `skills/`, named the same as the skill.
 - A `SKILL.md` with `name` and `description` frontmatter. The description is what decides
   whether the skill triggers, so write it for matching, not for marketing — name the
   phrases a user would actually say.
-- No `LICENSE` file inside the skill directory. Licensing is handled once, at the root.
+- No `license:` field in the `SKILL.md` frontmatter and no `LICENSE` file inside the skill
+  directory. `skill-creator` tends to add a `license:` by default; take it out. Licensing
+  is handled once, at the root.
 - A `README.md` in the skill directory if a human needs setup instructions (tools to
   install, credentials, limits worth knowing before running it).
 - Put executable helpers in `scripts/` and background material in `references/`.
 - Say what the skill will *not* do. A skill that is honest about its limits is more useful
   than one that implies it handles everything.
+- A row in the `## Skills` table in the root `README.md`, so the skill is listed with the
+  rest of them.
 
 ## Raising a problem
 
