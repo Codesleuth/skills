@@ -1,6 +1,7 @@
 ---
 name: apply-pr-feedback
 description: Read every review comment on a GitHub pull request, fix the ones that are unambiguous (one commit per comment), push, drive CI to green, then reply to each comment with the commit hash and resolve the thread. Runs end to end without stopping to ask questions — judgment calls are collected into a final summary for the human instead. Use this whenever the user mentions PR review comments, reviewer feedback, "address the review", "apply the PR feedback", "fix the review comments", responding to a code review, resolving review threads, or acting on what a reviewer flagged on a pull request — including bot reviewers like CodeRabbit, Copilot, or Graphite.
+license: Complete terms in LICENSE.txt
 ---
 
 # Apply PR feedback

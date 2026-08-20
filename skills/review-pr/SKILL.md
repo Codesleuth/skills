@@ -1,6 +1,7 @@
 ---
 name: review-pr
 description: Review the changes a GitHub pull request makes, reading the surrounding code as the context needed to judge them, then publish the review to GitHub as inline comments on the diff plus a summary that approves, comments, or requests changes. Runs start to finish without stopping to ask questions. Use this whenever the user says "review this PR", "review pull request 412", "do a code review on PR #123", "check this PR for bugs and style", "look over these changes and leave feedback", "post a GitHub review", or asks for a second opinion on someone's pull request before it merges — including when all they give you is a PR number or a GitHub URL.
+license: Complete terms in LICENSE.txt
 ---
 
 # Review a pull request
